@@ -105,7 +105,7 @@ class Tests(unittest.TestCase):
     def test_0(self):
         path = "Data/st70/st70_tsp.txt"
         opti_dist = 675
-        value,dist = metric(path,opti_dist,epoch=30,p=0.5,alpha=10,beta=5,n=40,k=8)
+        value,dist = metric(path,opti_dist,epoch=31,p=0.5,alpha=10,beta=5,n=40,k=8)
 
         print('\nTEST CASE 0')
         print('\noptimal distance    : ', opti_dist)
