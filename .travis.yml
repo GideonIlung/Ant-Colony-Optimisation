@@ -18,6 +18,7 @@ install:
   - pip install pytest-cov==2.11.1 
   - pip install pytest-cov pytest
   - pip install codecov
+  - python -m pip install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
 
 script:
   - python3 -m unittest test.py

@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from scipy.spatial import distance
 
 class ACO:
 ##########################################################################################################################################################    
@@ -198,3 +199,59 @@ class ACO:
 
         return dist,path
 ################################################################################################################################################################
+
+
+class Tools:
+
+    def get_distance_matrix(self,path):
+
+        """
+            Creates a distance matrix based on the data proved in path
+
+            Inputs:
+
+                path : the path to the text file containing information on each node
+            
+            Outputs:
+                A    : the distance matrix
+        """
+        
+        with open(path) as reader :
+
+            first_lines = 0
+            i = 0
+            X = []
+
+            for lines in reader.readlines():
+
+                if(first_lines>5 and lines!='EOF' and lines!='EOF\n'):
+                    
+                    stripped_line = lines.strip()
+                    list_line = stripped_line.split()
+                    w = [float(i) for i in list_line[1:]]
+                    X.append(w)
+
+                first_lines+=1
+        
+        X = np.array(X)
+        m,n = X.shape
+
+        A = []
+
+        for i in range(0,m,1):
+            u = X[i,:]
+            dist = []
+
+            for j in range(0,m,1):
+
+                if i!=j:
+                    v = X[j,:]
+                    d = distance.euclidean(u,v)
+                    dist.append(d)
+                else:
+                    dist.append(0)
+
+            A.append(dist)
+        
+        A = np.array(A)
+        return A
