@@ -105,7 +105,7 @@ class Tests(unittest.TestCase):
     def test_0(self):
         path = "Data/st70/st70_tsp.txt"
         opti_dist = 675
-        value,dist = metric(path,opti_dist,epoch=31,p=0.5,alpha=10,beta=5,n=40,k=8)
+        value,dist = metric(path,opti_dist,epoch=30,p=0.5,alpha=10,beta=5,n=40,k=8)
 
         print('\nTEST CASE 0')
         print('\noptimal distance    : ', opti_dist)
@@ -123,11 +123,16 @@ class Tests(unittest.TestCase):
         self.assertLessEqual(value,0.5,"Test 1 Failed")
 
     
-    # def test_1(self):
-    #     path = "Data/a280/a280_tsp.txt"
-    #     opti_dist = 2579
-    #     value = metric(path,opti_dist,epoch=5,p=0.5,alpha=1,beta=1,n=20,k=4)
-    #     self.assertLessEqual(value,0.5,"Test 1 Failed")
+    def test_2(self):
+        path = "Data/a280/a280_tsp.txt"
+        opti_dist = 2579
+        value = metric(path,opti_dist,epoch=30,p=0.4,alpha=30,beta=20,n=40,k=10)
+
+        print('\nTEST CASE 2')
+        print('\noptimal distance    : ', opti_dist)
+        print('calculated distance : ',dist)
+        self.assertLessEqual(value,0.5,"Test 2 Failed")
+
 
 if __name__ == '__main__':
     unittest.main()
