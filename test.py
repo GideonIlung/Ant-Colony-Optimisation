@@ -1,13 +1,19 @@
-#getting imports#
-import numpy as np
-from ACO import AntColony
+from aco import Ant
 
-model = AntColony()
+model = Ant()
+file_link = 'Data/eil101/eil101.tsp'
+A = model.get_distance_matrix(file_link)
+p = 0.5
+alpha = 1
+beta = 1
+n = 1000
+k = 75
+Q = 1
+dist,path = model.ACO(A,p,alpha,beta,n,k,Q,random_loc=True,update='elite',ratio =0.4,max_rep=20,tol = 0.001,log =True,plot=True,opt=629)
+#model.get_graph(file_link, path,A)
 
-#Hyperparameter#
-path = 'Data/st70/st70_tsp.txt'
-A = model.get_distance_matrix_symmetric(path)
-x0 = [0.62,20,10,50,45,1]
-param = model.SA(A,x0,rep=5,Tmax=20,Tmin=1,epoch=10,size=70,beta_max=20,alpha_max=20,max_iter=1000,Q_max=20,log=True)
-
-print("\n==============================\n","\n==============================\n","best set of param: \n",param)
+print('\n============================================\n')
+print('path taken \n')
+print(path)
+print('\npath distance was:',dist)
+print('\n============================================\n')
