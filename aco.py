@@ -224,7 +224,13 @@ class Ant:
         dist = dist_list.copy()
 
         if update == 'best':
-            return C_best
+            C_ans = np.zeros((n,n))
+
+            for i in range(0,len(C_best),1):
+                C_ans = C_ans + C_best[i]
+            
+            return C_ans
+
         elif update == 'all':
 
             C_ans = np.zeros((n,n))
@@ -252,8 +258,14 @@ class Ant:
             num = int(np.round(len(C)*ratio))
             C_ans = np.zeros((n,n))
 
-            for i in range(0,num,1):
-                C_ans = C_ans + C[i]
+            for i in range(0,len(C),1):
+
+                if i < num:
+                    C_ans = C_ans + 2*C[i]
+                else:
+                    C_ans = C_ans + C[i]
+            
+
             
             return C_ans
 
@@ -269,6 +281,39 @@ class Ant:
         ans = (1-s)*Pheromone + update_C
 
         return ans
+    
+    def global_elite(self,gelite,distelite,temp_dist,temp_C,n_ants,ratio):
+
+        m = int(round(n_ants*ratio))
+        cElite = gelite.copy()
+        distElite = distelite.copy()
+        C = temp_C.copy()
+        dist = temp_dist.copy()
+
+        if len(cElite)==0:
+            cElite.append(C)
+            distElite.append(dist)
+            return cElite,distElite
+
+        else:
+            k = len(cElite) - 1
+
+            while k>=0:
+
+                if dist<distElite[k]:
+                    k-=1
+                else:
+                    break
+            
+            cElite.insert(k+1,C)
+            distElite.insert(k+1,dist)
+
+            if len(cElite)>m:
+                cElite.pop(-1)
+                distElite.pop(-1)
+
+            return cElite,distElite
+
 
     def ACO(self,Distance,p,alpha,beta,n,k,Q,random_loc,update,ratio,max_rep,tol,log,plot,opt):
         """
@@ -300,6 +345,8 @@ class Ant:
         plot_error1 = []
         plot_error2 = []
         max_iter = 0
+        cElite = []
+        distElite = []
 
         #looping through each generation#
         for i in range(0,n,1):
@@ -323,6 +370,10 @@ class Ant:
 
                 #adds to list if solution is valid#
                 if valid == True:
+
+                    #update global values#
+                    if update =='best':
+                        cElite,distElite = self.global_elite(cElite,distElite,dist_temp,C_temp,k,ratio)
                     
                     #updates best solution in current generation#
                     if (len(dist_list) == 0) or (dist_temp < iter_dist):
@@ -352,15 +403,15 @@ class Ant:
 
             #plots solution#
             if plot == True and iter_dist!=None and min_dist!=None:
-                plot_error1.append(np.abs(min_dist-opt))
-                plot_error2.append(np.abs(iter_dist-opt))
+                plot_error1.append((np.abs(min_dist-opt)/opt)*100)
+                plot_error2.append((np.abs(iter_dist-opt)/opt)*100)
 
             #exit if solution the same#
             if rep == max_rep:
                 break
             
             #getting C matrix based on update rule#
-            C_update = self.update_C(min_C, C_list, dist_list, update, len(A),k, ratio)
+            C_update = self.update_C(cElite, C_list, dist_list, update, len(A),k, ratio)
 
             #update pheromone matrix#
             P = self.updatePheromone(p, P,C_update, i, n)
@@ -368,10 +419,10 @@ class Ant:
         if plot == True:
             plt.rcParams['figure.figsize'] = (16,10)
             x_axis = list(range(max_iter))
-            plt.plot(x_axis,plot_error1,label = 'error of best solution')
-            plt.plot(x_axis,plot_error2,label="error at each iteration")
+            plt.plot(x_axis,plot_error1,label = r'error % of best solution')
+            plt.plot(x_axis,plot_error2,label= r"error % at each iteration")
             plt.xlabel('iteration')
-            plt.ylabel('error')
+            plt.ylabel(r'error %')
             plt.legend(loc='best')
             plt.savefig('output.png')
             plt.close()
