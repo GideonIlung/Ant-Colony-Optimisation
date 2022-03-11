@@ -197,7 +197,9 @@ class Ant:
             outputs:
                 new_path : reordered path
         """
-
+        if not(start in path):
+            return path
+        
         index = path.index(start)
 
         if index!=0:
@@ -417,10 +419,21 @@ class Ant:
             P = self.updatePheromone(p, P,C_update, i, n)
 
         if plot == True:
+
+            #saving values to textfile#
+            outfile = open("error.txt","w")
+            outfile.write('[')
+            for i in range(0,len(plot_error1)-1,1):
+                outfile.write(str(plot_error1[i]) + ",")
+            
+            outfile.write(str(plot_error1[-1])+']')
+            outfile.close()
+
             plt.rcParams['figure.figsize'] = (16,10)
             x_axis = list(range(max_iter))
             plt.plot(x_axis,plot_error1,label = r'error % of best solution')
             plt.plot(x_axis,plot_error2,label= r"error % at each iteration")
+            #plt.ylim(0,100)
             plt.xlabel('iteration')
             plt.ylabel(r'error %')
             plt.legend(loc='best')
@@ -483,12 +496,12 @@ class Ant:
         y = []
 
         #getting p#
-        p = x[0] + np.random.uniform(-1,1,size=1)[0]
+        p = x[0] + np.random.uniform(-0.5,0.5,size=1)[0]
 
         if p>1:
-            p = 1
+            p = 0.5
         elif p<0:
-            p = 0
+            p = 0.5
         
         y.append(p)
 
@@ -509,8 +522,8 @@ class Ant:
         y.append(beta)
 
         #getting n#
-        n = x[3] + int(np.round(np.random.uniform(-1,1,size=1) * scale))
-
+        #n = x[3] + int(np.round(np.random.uniform(-1,1,size=1) * scale))
+        n = x[3]
         if n<0:
             n = 0
         
@@ -532,6 +545,32 @@ class Ant:
         
         y.append(Q)
         return y
+    
+    def get_average(self,Distance,x0,update_type,ratio,tol,rep,loop):
+        """
+            runs aco multiple times and returns average cost
+
+            Inputs:
+                Distance    : the distance matrix
+                x0          : current configuration of parameters
+                update_type : how the pheromone matrix is updated (all,best,elite)
+                ratio       : percentage of best solutions to be used (value between 0-1)
+                tol         : tolerance for the ACO alpgrithm
+                rep         : maximum number of repietitions aco will allow
+                loop        : the amount of times algorithm will be run
+
+        """
+        ans = 0
+        A = Distance.copy()
+        x = x0.copy()
+
+        for i in range(0,rep,1):
+            fx,x_path = self.ACO(A,p=x[0],alpha=x[1],beta=x[2],n=x[3],k=x[4],Q=x[5],random_loc=True,update=update_type,ratio=ratio,max_rep=rep,tol=tol,log=False,plot=False,opt=0)
+            ans+=fx
+        
+        ans = ans/rep
+
+        return ans
 
 
     def SA(self,Distance,x0,t0,t1,n,alpha,update_type,ratio,tol,rep):
@@ -554,7 +593,8 @@ class Ant:
 
         A = Distance.copy()
         x = x0.copy()
-        fx,x_path = self.ACO(A,p=x[0],alpha=x[1],beta=x[2],n=x[3],k=x[4],Q=x[5],random_loc=True,update=update_type,ratio=ratio,max_rep=rep,tol=tol,log=False,plot=False,opt=0)
+        #fx,x_path = self.ACO(A,p=x[0],alpha=x[1],beta=x[2],n=x[3],k=x[4],Q=x[5],random_loc=True,update=update_type,ratio=ratio,max_rep=rep,tol=tol,log=False,plot=False,opt=0)
+        fx = self.get_average(Distance, x0, update_type, ratio, tol, rep,loop = 5)
 
         while t1 > t0:
             scale = np.sqrt(t1-t0)
@@ -562,8 +602,8 @@ class Ant:
             for i in range(0,n,1):
 
                 y = self.new_config(x,len(A),scale)
-                fy,y_path = self.ACO(A,p=y[0],alpha=y[1],beta=y[2],n=y[3],k=y[4],Q=y[5],random_loc=True,update=update_type,ratio=ratio,max_rep=rep,tol=tol,log=False,plot=False,opt=0)
-
+                #fy,y_path = self.ACO(A,p=y[0],alpha=y[1],beta=y[2],n=y[3],k=y[4],Q=y[5],random_loc=True,update=update_type,ratio=ratio,max_rep=rep,tol=tol,log=False,plot=False,opt=0)
+                fy = self.get_average(Distance,y, update_type, ratio, tol, rep,loop=5)
                 if fy < fx:
                     fx = fy
                     x = y.copy()
@@ -573,5 +613,5 @@ class Ant:
             
             t1 = alpha * t1
         
-        return x,fx,x_path
+        return x,fx
 
